@@ -1,0 +1,957 @@
+==============================
+EXPERIMENT 15: ANALYSING ANDROID APP PERMISSIONS AND MOBILE TRAFFIC
+===================================================================
+
+PROCEDURE
+
+---
+
+## STEP 1: Create Android Virtual Device (AVD)
+
+1. Install and open Android Studio
+2. Open AVD Manager
+3. Click Create Virtual Device
+4. Select a device (Pixel 2 / Pixel 9)
+5. Complete setup and download system image
+
+---
+
+## STEP 2: Start Emulator with Proxy
+
+1. Open Command Prompt
+
+2. Go to:
+   cd C:\Users\Admin\AppData\Local\Android\Sdk\emulator
+
+3. Run:
+   emulator -list-avds
+
+4. Start emulator:
+   emulator -avd Pixel_9 -http-proxy http://10.0.2.2:8080
+
+---
+
+## STEP 3: Configure Proxy in Emulator
+
+1. Go to Settings
+2. Network & Internet → Internet → Edit → Advanced options
+3. Set Proxy to Manual
+4. Hostname: 10.0.2.2
+5. Port: 8080
+6. Save
+
+---
+
+## STEP 4: (If proxy not saving – use ADB)
+
+1. Go to:
+   cd C:\Users\Admin\AppData\Local\Android\Sdk\platform-tools
+
+2. Run:
+   adb devices
+
+3. Set proxy:
+   adb shell settings put global http_proxy 10.0.2.2:8080
+
+4. Verify:
+   adb shell settings get global http_proxy
+
+---
+
+## STEP 5: Configure Burp Suite
+
+1. Open Burp Suite
+2. Go to Proxy → Options
+3. Proxy Listeners → Edit → Select All Interfaces
+4. Turn Intercept ON
+
+---
+
+## STEP 6: Capture HTTP Traffic
+
+1. Open Chrome in emulator
+2. Visit http://example.com
+3. Check Burp Suite → Proxy → HTTP History
+
+---
+
+## STEP 7: Download Burp CA Certificate
+
+1. Go to Proxy → Options → Import/Export CA Certificate
+2. Select Certificate in DER format
+3. Save as burpcer.der
+
+---
+
+## STEP 8: Install Certificate in Emulator
+
+1. Run:
+   adb push C:\Users\Admin\Downloads\burpcer.der /sdcard/Download/
+
+2. In emulator:
+   Settings → Security & Privacy → More Security & Privacy
+   → Encryption & Credentials → Install Certificate → CA Certificate
+   → Select burpcer.der
+
+---
+
+## STEP 9: Verify HTTPS Interception
+
+1. Open Chrome in emulator
+2. Visit https://example.com or https://wikipedia.com
+3. Check Burp Suite → Proxy → HTTP History
+
+OBSERVATION
+
+---
+
+1. HTTP traffic was successfully captured in Burp Suite under Proxy → HTTP History
+2. Requests and responses for websites like example.com were visible in plain text
+3. After installing the CA certificate, HTTPS traffic was also intercepted successfully
+4. Secure (HTTPS) requests were decrypted and displayed in Burp Suite
+5. Headers, cookies, and request parameters were visible for analysis
+6. Without CA certificate, HTTPS traffic was not visible or appeared encrypted
+7. Proxy configuration (10.0.2.2:8080) successfully routed emulator traffic through Burp Suite
+8. Intercept ON allowed modification of requests before forwarding
+9. Intercept OFF allowed normal browsing while still logging traffic
+
+==============================
+END OF EXPERIMENT 15
+====================
+
+==============================
+EXPERIMENT 16: TESTING IoT DEVICE SECURITY (DEFAULT PASSWORDS & OPEN PORTS)
+===========================================================================
+
+PROCEDURE
+
+---
+
+## STEP 1: Deploy Vulnerable IoT Simulation
+
+1. Run the following command:
+   docker run -d -p 8090:3000 --name juiceshop bkimminich/juice-shop
+
+2. Open browser:
+   http://localhost:8090
+
+---
+
+## STEP 2: Identify Host IP Address
+
+1. Open Command Prompt
+
+2. Run:
+   ipconfig
+
+3. Note the IP address
+
+---
+
+## STEP 3: Perform Network Scan from Kali Linux
+
+1. Open Kali Linux terminal
+
+2. Run:
+   nmap -sV 192.168.x.x
+
+3. This performs:
+
+* Port scanning
+* Service detection
+* Version detection
+* Banner grabbing
+
+---
+
+## STEP 4: Nmap Version Scan
+
+1. Run:
+   nmap -sV 192.168.x.x
+
+2. Observe service and version details
+
+---
+
+## STEP 5: Access IoT Device Dashboard
+
+1. Open browser
+2. Visit:
+   http://localhost:8090
+
+---
+
+## STEP 6: Test Default / Weak Credentials
+
+1. Open login page
+2. Try default/admin credentials
+3. Check login success
+
+---
+
+## STEP 7: Analyze Network Traffic
+
+1. Open Developer Tools → Network tab
+2. Reload page
+3. Observe HTTP requests and responses
+
+OBSERVATION
+
+---
+
+1. Port 8090 was found open indicating HTTP service running
+2. Additional ports such as 135, 139, and 445 were visible
+3. Nmap successfully identified services and their versions (service fingerprinting)
+4. Banner information revealed application details (Juice Shop)
+5. Web application was accessible via browser on port 8090
+6. Login system accepted default/weak credentials indicating poor authentication security
+7. No account lockout mechanism observed for multiple login attempts
+8. Network traffic was transmitted over HTTP (no HTTPS)
+9. Data was visible in plain text in Developer Tools → Network tab
+10. No SSL/TLS encryption detected, making communication vulnerable
+11. Server headers and application details were exposed (information disclosure)
+
+==============================
+END OF EXPERIMENT 16
+====================
+
+==============================
+EXPERIMENT 17: CREATING AND ANALYZING DISK IMAGES USING dc3dd AND AUTOPSY
+=========================================================================
+
+PROCEDURE
+
+---
+
+## STEP 1: Open Terminal in Kali Linux
+
+1. Press:
+   Ctrl + Alt + T
+2. Terminal will open
+
+---
+
+## STEP 2: Create Sample Evidence
+
+1. Create a sample file:
+   echo "Cybersecurity Lab Evidence" > evidence.txt
+
+2. Verify file:
+   ls
+
+---
+
+## STEP 3: Identify Disk Partition
+
+1. List storage devices:
+   lsblk
+
+2. Identify partition (e.g., /dev/sda1)
+
+---
+
+## STEP 4: Create Disk Image (Using dc3dd/dd)
+
+1. Create a disk image file:
+   dd if=/dev/zero of=practice_disk.dd bs=1M count=100
+
+2. This creates a 100MB disk image
+
+3. (Optional forensic step using dc3dd with hashing)
+   dc3dd if=/dev/sda of=/home/kali/disk_image.dd hash=md5 log=/home/kali/acquisition.log
+
+4. This performs:
+
+* Bit-by-bit copy
+* Generates hash value
+* Creates log file
+
+---
+
+## STEP 5: Format and Mount Disk Image
+
+1. Format disk:
+   mkfs.ext4 practice_disk.dd
+
+2. Create mount directory:
+   mkdir /mnt/disk
+
+3. Mount disk:
+   sudo mount -o loop practice_disk.dd /mnt/disk
+
+4. Copy evidence file:
+   cp evidence.txt /mnt/disk/
+
+5. Unmount disk:
+   sudo umount /mnt/disk
+
+---
+
+## STEP 6: Verify Image Creation
+
+1. Check image file:
+   ls -lh /home/kali/disk_image.dd
+
+2. View log file:
+   cat /home/kali/acquisition.log
+
+3. Verify:
+
+* Image size
+* Hash value
+* Acquisition details
+
+---
+
+## STEP 7: Start Autopsy
+
+1. Run:
+   autopsy
+
+2. Open browser and go to:
+   http://localhost:9999/autopsy
+
+---
+
+## STEP 8: Create New Case in Autopsy
+
+1. Click "Create New Case"
+2. Enter case name and details
+3. Click Next
+
+---
+
+## STEP 9: Add Disk Image
+
+1. Select:
+   Add Host → Add Image
+
+2. Browse and select:
+   /home/kali/disk_image.dd
+
+3. Proceed with default settings
+
+4. Start analysis
+
+---
+
+## STEP 10: Analyze Evidence
+
+1. Explore file system in Autopsy
+2. Locate created file (evidence.txt)
+3. Check:
+
+* File metadata
+* Deleted files
+* Logs and artifacts
+
+4. Extract relevant evidence if needed
+
+OBSERVATION
+
+---
+
+1. Disk image was successfully created as a bit-by-bit copy
+2. Hash value (MD5) was generated ensuring data integrity
+3. Log file recorded acquisition details (time, size, hash)
+4. Disk image contained the created evidence file
+5. Mounted disk allowed insertion of sample forensic data
+6. Autopsy successfully loaded and analyzed the disk image
+7. File system structure was visible in Autopsy interface
+8. Evidence file (evidence.txt) was detected during analysis
+9. Metadata such as file size, timestamps, and location were accessible
+10. Deleted files and system artifacts could be explored
+11. No modification was made to original data ensuring forensic integrity
+
+==============================
+END OF EXPERIMENT 17
+====================
+
+==============================
+EXPERIMENT 18: LOG FILE ANALYSIS FOR INCIDENT DETECTION
+=======================================================
+
+PROCEDURE
+
+---
+
+## STEP 1: Navigate to Log Directory
+
+1. Open terminal
+
+2. Run:
+   cd /var/log
+
+3. List files:
+   ls
+
+4. Observe log files:
+
+* dpkg.log
+* apache2
+* nginx
+* journal
+* wtmp, btmp
+
+---
+
+## STEP 2: Check Successful Logins
+
+1. Run:
+   last
+
+2. Observe login history
+
+---
+
+## STEP 3: View System Logs
+
+1. Run:
+   journalctl | less
+
+2. Scroll through logs
+
+---
+
+## STEP 4: Detect Failed SSH Attempts
+
+1. Run:
+   journalctl | grep "Failed"
+
+2. Observe failed authentication attempts
+
+---
+
+## STEP 5: Analyze SSH Activity
+
+1. Run:
+   journalctl | grep ssh
+
+2. Observe login attempts and connections
+
+---
+
+## STEP 6: Detect Errors
+
+1. Run:
+   journalctl | grep -i error
+
+2. Observe system errors
+
+---
+
+## STEP 7: Analyze Apache Logs
+
+1. Navigate:
+   cd /var/log/apache2
+
+2. List files:
+   ls
+
+3. Open access log:
+   sudo less access.log
+
+---
+
+## STEP 8: Identify Suspicious Requests
+
+1. Run:
+   grep "404" /var/log/apache2/access.log
+
+2. Observe failed requests
+
+---
+
+## STEP 9: Check Package Activity
+
+1. Run:
+   less /var/log/dpkg.log
+
+2. Observe installation and update logs
+
+---
+
+## STEP 10: Real-Time Monitoring
+
+1. Run:
+   sudo journalctl -f
+
+2. Observe live logs
+
+---
+
+## STEP 11: Simulate Failed SSH Login
+
+1. Install SSH:
+   sudo apt install openssh-server -y
+
+2. Start service:
+   sudo service ssh start
+
+3. Find IP:
+   ip a
+
+4. Attempt wrong login:
+   ssh fakeuser@localhost
+   OR
+   ssh kali@localhost
+
+5. Enter wrong password multiple times
+
+---
+
+## STEP 12: Analyze Failed Login Attempts
+
+1. Run:
+   journalctl | grep "Failed password"
+
+2. Extract IP:
+   journalctl | grep "Failed password" | awk '{print $11}'
+
+3. Count attempts:
+   journalctl | grep "Failed password" | awk '{print $11}' | sort | uniq -c | sort -nr
+
+---
+
+## STEP 13: Alternative Method (lastb)
+
+1. Run:
+   sudo lastb
+
+2. Observe failed login records
+
+---
+
+## STEP 14: Check Recent Activity
+
+1. Run:
+   journalctl --since "10 minutes ago"
+
+2. Observe recent logs
+
+OBSERVATION
+
+---
+
+1. Log directory (/var/log) contains important system and application logs 
+2. Successful login history was observed using the "last" command 
+3. System logs displayed various services, authentication events, and activities 
+4. Failed login attempts were detected using journalctl grep "Failed" 
+5. SSH logs showed login attempts and connections 
+6. Error logs indicated system issues or abnormal behavior 
+7. Apache logs recorded web requests and user activity 
+8. Multiple 404 errors indicated possible scanning or probing attempts 
+9. Package logs showed installation and update activities 
+10. Real-time monitoring displayed live system activity 
+11. Simulated failed SSH login attempts were successfully recorded in logs 
+12. Repeated failed login attempts from the same IP (e.g., 127.0.0.1) were identified 
+13. High frequency login attempts indicated brute force attack behavior 
+14. Suspicious IPs were identified based on repeated failed attempts 
+15. System logs also showed normal activities such as CRON jobs, services, and user commands 
+16. Repeated kernel messages (VirtualBox related) were observed, indicating abnormal but non-malicious behavior 
+
+==============================
+END OF EXPERIMENT 18
+====================
+
+==============================
+EXPERIMENT 20: PRIVACY AUDIT OF POPULAR APPS (DESKTOP WHATSAPP) AND WEBSITES (FACEBOOK) & DATA BREACH CASE STUDY ANALYSIS
+=========================================================================================================================
+
+PROCEDURE
+
+---
+
+## STEP 1: Install Node.js & npm
+
+1. Open terminal
+2. Run:
+   sudo apt update
+   sudo apt install nodejs npm -y
+
+---
+
+## STEP 2: Install Nativefier
+
+1. Run:
+   sudo npm install -g nativefier
+
+---
+
+## STEP 3: Create WhatsApp Desktop App
+
+1. Run:
+   nativefier https://web.whatsapp.com
+
+2. A folder will be created:
+   web-whatsapp-linux-x64
+
+---
+
+## STEP 4: Run WhatsApp Desktop
+
+1. Navigate to folder:
+   cd WhatsAppWeb-linux-x64
+
+2. Run:
+   ./WhatsAppWeb
+
+---
+
+## STEP 5: Login to WhatsApp
+
+1. QR Code appears
+2. Open WhatsApp on mobile
+3. Go to Linked Devices
+4. Scan QR code
+5. Login completed
+
+==============================
+PART 1: PRIVACY AUDIT OF DESKTOP WHATSAPP
+=========================================
+
+---
+
+## STEP 6: Launch WhatsApp Desktop
+
+1. Go to directory:
+   cd WhatsAppWeb-linux-x64
+
+2. Run:
+   ./WhatsAppWeb
+
+3. Login using QR code
+
+---
+
+## STEP 7: Analyze Trackers (Exodus Privacy)
+
+1. Open browser
+
+2. Go to:
+   https://reports.exodus-privacy.eu.org
+
+3. Search for WhatsApp
+
+4. Observe:
+
+* Trackers (Google Analytics, Crashlytics, Facebook Analytics)
+* Permissions used
+
+---
+
+## STEP 8: Start Wireshark
+
+1. Open Wireshark
+2. Select network interface (eth0 / wlan0)
+3. Click Start Capture
+
+---
+
+## STEP 9: Generate Network Traffic
+
+1. In WhatsApp Desktop:
+
+* Send messages
+* Send images
+* Open chats
+
+---
+
+## STEP 10: Apply Filters in Wireshark
+
+1. Use filters:
+   tls
+   dns
+
+==============================
+PART 2: PRIVACY AUDIT OF FACEBOOK WEBSITE
+=========================================
+
+---
+
+## STEP 11: Open Facebook
+
+1. Open browser
+
+2. Visit:
+   https://www.facebook.com
+
+3. Login using test account
+
+---
+
+## STEP 12: Start Burp Suite
+
+1. Open Burp Suite
+
+---
+
+## STEP 13: Configure Proxy
+
+1. Set:
+   IP: 127.0.0.1
+   Port: 8080
+
+2. In browser:
+   Settings → Network → Manual Proxy
+
+---
+
+## STEP 14: Intercept Traffic
+
+1. Turn Intercept ON
+2. Reload Facebook
+
+---
+
+## STEP 15: Analyze Tracking
+
+1. Press F12 → Network tab
+2. Observe:
+
+* Ads
+* Analytics scripts
+* Third-party requests
+
+==============================
+PART 3: DATA BREACH CASE STUDY
+==============================
+
+---
+
+## STEP 16: Study Facebook Data Breach
+
+1. 533 million users affected
+2. Data leaked:
+
+* Phone numbers
+* Emails
+
+3. Cause:
+   API vulnerability
+
+---
+
+## STEP 17: Study WhatsApp Pegasus Attack
+
+1. Spyware attack via missed call
+2. Remote access to device
+
+---
+
+## STEP 18: Check Email Breach Status
+
+1. Open browser
+
+2. Visit:
+   https://haveibeenpwned.com
+
+3. Enter email
+
+4. Check breach status
+
+OBSERVATION
+
+---
+
+1. WhatsApp Desktop generated encrypted traffic (TLS), no message content visible
+2. Network packets showed communication with domains like whatsapp.net and facebook.com
+3. Metadata such as IP address, timestamps, and server communication were visible
+4. Exodus Privacy showed presence of trackers like Google Analytics, Crashlytics, and Facebook Analytics
+5. WhatsApp uses end-to-end encryption ensuring message confidentiality
+6. Wireshark confirmed that only encrypted packets were captured, not actual message data
+7. Facebook website traffic showed multiple cookies such as datr and fr
+8. Session IDs and headers were visible in Burp Suite interception
+9. Facebook used extensive tracking mechanisms including ads and analytics scripts
+10. Multiple third-party requests were observed indicating heavy tracking behavior
+11. Facebook Data Breach exposed personal data of 533 million users due to API vulnerability
+12. WhatsApp Pegasus attack demonstrated risk of spyware exploiting application vulnerabilities
+13. Email breach check showed how user accounts can be verified for past data leaks
+14. Applications differ in privacy approach: WhatsApp focuses on encryption, while Facebook emphasizes data tracking
+
+==============================
+END OF EXPERIMENT 20
+====================
+
+==============================
+EXPERIMENT 21: CONDUCTING A SECURITY AUDIT AND RISK ASSESSMENT
+==============================================================
+
+PROCEDURE
+
+---
+
+## STEP 1: System Information
+
+1. Press Windows + R
+
+2. Type:
+   msinfo32
+
+3. Note:
+
+* OS Version
+* System Type
+
+---
+
+## STEP 2: Check Windows Updates
+
+1. Open Settings
+2. Go to Windows Update
+3. Click Check for updates
+
+---
+
+## STEP 3: Check Firewall Status
+
+1. Search: Windows Defender Firewall
+2. Click Turn Windows Defender Firewall on or off
+
+---
+
+## STEP 4: Check Antivirus (Windows Security)
+
+1. Open Windows Security
+
+2. Go to Virus & Threat Protection
+
+3. Check:
+
+* Real-time protection → ON
+* Last scan → Recent
+
+---
+
+## STEP 5: Check Password & Account Security
+
+1. Go to:
+   Settings → Accounts → Sign-in options
+
+2. Check:
+
+* Password / PIN enabled
+* Windows Hello (optional)
+
+---
+
+## STEP 6: Check Installed Applications
+
+1. Go to:
+   Settings → Apps → Installed apps
+
+2. Look for:
+
+* Unknown software
+* Cracked tools
+
+---
+
+## STEP 7: Check Startup Programs
+
+1. Press:
+   Ctrl + Shift + Esc
+
+2. Go to Startup tab
+
+3. Disable:
+
+* Unknown apps
+
+---
+
+## STEP 8: Check Network Security
+
+1. Go to:
+   Settings → Network & Internet
+
+2. Check:
+
+* WiFi connection
+* Network type (Private/Public)
+
+---
+
+## STEP 9: Check Browser Security
+
+1. Open Chrome/Edge
+
+2. Go to:
+   Settings → Privacy & Security
+
+3. Check:
+
+* Safe browsing ON
+* Remove unknown extensions
+
+---
+
+## STEP 10: Check Data Backup
+
+1. Search:
+   Backup settings
+
+2. Check:
+
+* OneDrive / External backup
+
+---
+
+## STEP 11: Risk Assessment
+
+1. Identify:
+
+* Assets
+* Threats
+* Vulnerabilities
+
+2. Determine risk level (Low / Medium / High)
+
+---
+
+## STEP 12: Security Recommendations
+
+1. Technical Controls:
+
+* Enable firewall
+* Enable antivirus
+* Perform regular updates
+
+2. Administrative Controls:
+
+* Use strong passwords
+* Avoid unknown downloads
+
+3. User Awareness:
+
+* Avoid phishing links
+* Practice safe browsing
+
+---
+
+## STEP 13: Result
+
+System vulnerabilities identified and mitigation strategies suggested
+
+OBSERVATION
+
+---
+
+1. System information showed Windows 11 (64-bit) with Secure Boot enabled 
+2. Windows updates were pending, indicating potential exposure to vulnerabilities 
+3. Firewall was active and managed by third-party antivirus (Kaspersky) 
+4. Antivirus protection was active with no current threats detected 
+5. Account security included password and PIN authentication 
+6. Installed applications did not include suspicious or unauthorized software 
+7. Some startup applications were enabled, which may impact performance and security 
+8. System was connected to a Wi-Fi network with Public network profile enabled 
+9. Browser security had Safe Browsing enabled for protection against malicious sites 
+10. Data backup (OneDrive) was not configured, increasing risk of data loss 
+11. Risk assessment identified issues such as no backup, public network usage, and potential weak passwords 
+12. Security recommendations included enabling backups, using strong passwords, and maintaining updates 
+
+==============================
+END OF EXPERIMENT 21
+====================
+
