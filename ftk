@@ -1,0 +1,43 @@
+Minimalest Possible Correct Workflow
+1. Create Small Disk
+dd if=/dev/zero of=mini_disk.dd bs=1M count=20
+2. Format It
+mkfs.ext4 mini_disk.dd
+3. Create Mount Point
+mkdir ~/mnt
+4. Mount It
+sudo mount -o loop mini_disk.dd ~/mnt
+5. Add Evidence
+echo "This is digital evidence" | sudo tee ~/mnt/evidence.txt
+6. Unmount
+sudo umount ~/mnt
+7. Open in Autopsy
+sudo autopsy
+
+Then open:
+
+http://127.0.0.1:9999/autopsy
+
+Add:
+
+mini_disk.dd
+
+Experiment complete.
+
+When dc3dd actually matters
+
+dc3dd is intended for:
+
+imaging real disks (/dev/sda, /dev/sdb)
+preserving evidence
+generating hashes
+maintaining forensic integrity
+
+In your reduced lab setup:
+
+you already directly created the image
+so re-imaging the image is redundant
+
+You can still mention in viva/report:
+
+“dc3dd acquisition step was omitted because the created .dd file itself already represented the forensic disk image.”
